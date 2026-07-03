@@ -1,0 +1,12 @@
+../Core/Src/mg996r.c:30:17:MG996R_AngleToCCR	24	static
+../Core/Src/mg996r.c:54:14:MG996R_CCRToAngle	24	static
+../Core/Src/mg996r.c:75:19:MG996R_Init	16	static
+../Core/Src/mg996r.c:104:6:MG996R_SetAngle	24	static
+../Core/Src/mg996r.c:126:7:MG996R_GetAngle	16	static
+../Core/Src/mg996r.c:146:6:MG996R_MoveTo	40	static
+../Core/Src/mg996r.c:188:6:MG996R_MoveToSpeed	24	static
+../Core/Src/mg996r.c:214:6:MG996R_Center	8	static
+../Core/Src/mg996r.c:222:6:MG996R_Zero	8	static
+../Core/Src/mg996r.c:230:6:MG996R_Disable	8	static
+../Core/Src/mg996r.c:246:6:MG996R_SetCalibration	16	static
+../Core/Src/mg996r.c:262:6:MG996R_GetCalibration	16	static

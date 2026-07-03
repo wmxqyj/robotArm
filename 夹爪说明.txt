@@ -1,0 +1,147 @@
+/**
+ * @file mg996r_test_example.c
+ * @brief MG996R 舵机控制测试示例
+ * 
+ * 使用分层架构通过串口控制 MG996R 舵机
+ */
+
+/* ==================== 测试命令 ==================== */
+
+/**
+ * 1. 设置舵机角度（立即）
+ * 命令格式：mg_set <angle>
+ * 示例：
+ */
+// > mg_set 90
+// 响应：舵机立即转到 90°
+
+/**
+ * 2. 设置舵机角度（平滑运动）
+ * 命令格式：mg_set <angle> <duration_ms>
+ * 示例：
+ */
+// > mg_set 45 2000
+// 响应：舵机在 2 秒内平滑转到 45°
+
+// > mg_set 135 1000
+// 响应：舵机在 1 秒内平滑转到 135°
+
+/**
+ * 3. 获取当前角度
+ * 命令格式：mg_get
+ * 示例：
+ */
+// > mg_get
+// 响应：
+// ========== MG996R Get Angle ==========
+// Current angle: 90.00°
+// ==========================================
+
+/**
+ * 4. 完整测试序列
+ */
+// > mg_set 0
+// > mg_set 90 1000
+// > mg_get
+// > mg_set 180 2000
+// > mg_get
+
+/* ==================== Python 控制示例 ==================== */
+
+/*
+import serial
+import time
+
+# 连接串口
+ser = serial.Serial('COM3', 115200, timeout=1)
+time.sleep(2)
+
+def send_command(cmd):
+    """发送命令并读取响应"""
+    print(f"Sending: {cmd}")
+    ser.write((cmd + '\n').encode())
+    time.sleep(0.5)
+    
+    responses = []
+    while ser.in_waiting > 0:
+        line = ser.readline().decode('utf-8', errors='ignore').strip()
+        if line:
+            responses.append(line)
+    
+    for line in responses:
+        print(line)
+    
+    return responses
+
+# 测试 1: 基本角度设置
+print("=== Test 1: Basic Angle Control ===")
+send_command("mg_set 0")
+time.sleep(1)
+
+send_command("mg_set 90")
+time.sleep(1)
+
+send_command("mg_set 180")
+time.sleep(1)
+
+# 测试 2: 平滑运动
+print("\n=== Test 2: Smooth Motion ===")
+send_command("mg_set 45 2000")  # 2 秒到 45°
+time.sleep(2.5)
+
+send_command("mg_set 135 1000")  # 1 秒到 135°
+time.sleep(1.5)
+
+# 测试 3: 读取角度
+print("\n=== Test 3: Read Angle ===")
+send_command("mg_get")
+
+# 测试 4: 完整序列
+print("\n=== Test 4: Full Sequence ===")
+angles = [0, 30, 60, 90, 120, 150, 180]
+for angle in angles:
+    cmd = f"mg_set {angle} 500"
+    send_command(cmd)
+    time.sleep(0.7)
+
+# 回到中位
+send_command("mg_set 90 1000")
+
+ser.close()
+*/
+
+/* ==================== 分层架构说明 ==================== */
+
+/**
+ * 命令层 (robot_cmd.c)
+ * ┌─────────────────────────────────────┐
+ * │ mg_set angle [duration]             │
+ * │ mg_get                              │
+ * └─────────────────────────────────────┘
+ *              ↓
+ * 事件层 (robot.c)
+ * ┌─────────────────────────────────────┐
+ * │ ROBOT_MG996R_SET_ANGLE_EVENT        │
+ * │ ROBOT_MG996R_GET_ANGLE_EVENT        │
+ * └─────────────────────────────────────┘
+ *              ↓
+ * 业务逻辑层 (robot.c)
+ * ┌─────────────────────────────────────┐
+ * │ robot_mg996r_set_angle_execute()    │
+ * │ robot_mg996r_get_angle_execute()    │
+ * └─────────────────────────────────────┘
+ *              ↓
+ * 驱动层 (mg996r.c)
+ * ┌─────────────────────────────────────┐
+ * │ MG996R_SetAngle()                   │
+ * │ MG996R_GetAngle()                   │
+ * │ MG996R_MoveTo()                     │
+ * └─────────────────────────────────────┘
+ *              ↓
+ * 硬件层 (TIM3 PWM)
+ * ┌─────────────────────────────────────┐
+ * │ TIM3 Channel 1                      │
+ * │ PWM: 20ms (50Hz)                    │
+ * │ Pulse: 0.5-2.5ms                    │
+ * └─────────────────────────────────────┘
+ */
